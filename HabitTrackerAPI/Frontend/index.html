@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .habit { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+        button { margin: 5px; padding: 8px 15px; cursor: pointer; }
+        input, textarea { margin: 5px; padding: 8px; width: 300px; }
+    </style>
+</head>
+<body>
+    <h1>Трекер привычек</h1>
+    
+    <div>
+        <h2>Добавить новую привычку</h2>
+        <input type="text" id="nameInput" placeholder="Название привычки">
+        <textarea id="descInput" placeholder="Описание"></textarea>
+        <input type="number" id="freqInput" placeholder="Частота в день">
+        <button onclick="addHabit()">Добавить</button>
+    </div>
+
+    <div id="habitsList">
+        <h2>Мои привычки</h2>
+    </div>
+
+    <script>
+	
+	  const API_BASE_URL = 'http://localhost:5145';
+      const API_URL = `${API_BASE_URL}/api/Habits`;
+        // Загрузить все привычки
+        async function loadHabits() {
+            try {
+                const response = await fetch(API_URL);
+                const habits = await response.json();
+                displayHabits(habits);
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+            }
+        }
+
+        // Показать привычки на странице
+        function displayHabits(habits) {
+            const container = document.getElementById('habitsList');
+            container.innerHTML = '<h2>Мои привычки</h2>';
+            
+            habits.forEach(habit => {
+                const habitDiv = document.createElement('div');
+                habitDiv.className = 'habit';
+                habitDiv.innerHTML = `
+                    <h3>${habit.name}</h3>
+                    <p>${habit.description || 'Без описания'}</p>
+                    <p>Цель: ${habit.frequencyPerDay} раз в день</p>
+                    <button onclick="deleteHabit(${habit.id})">Удалить</button>
+                `;
+                container.appendChild(habitDiv);
+            });
+        }
+
+        // Добавить новую привычку
+        async function addHabit() {
+            const newHabit = {
+                name: document.getElementById('nameInput').value,
+                description: document.getElementById('descInput').value,
+                frequencyPerDay: parseInt(document.getElementById('freqInput').value)
+            };
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newHabit)
+                });
+                
+                // Очищаем поля и обновляем список
+                document.getElementById('nameInput').value = '';
+                document.getElementById('descInput').value = '';
+                document.getElementById('freqInput').value = '';
+                loadHabits();
+            } catch (error) {
+                console.error('Ошибка добавления:', error);
+            }
+        }
+
+        // Удалить привычку
+        async function deleteHabit(id) {
+            try {
+                await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                loadHabits(); // Перезагружаем список
+            } catch (error) {
+                console.error('Ошибка удаления:', error);
+            }
+        }
+
+        // Загружаем привычки при загрузке страницы
+        document.addEventListener('DOMContentLoaded', loadHabits);
+    </script>
+</body>
+</html>
