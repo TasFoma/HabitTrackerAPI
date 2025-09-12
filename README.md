@@ -35,7 +35,6 @@ HabitTrackerAPI/
 ---
 
 ## 🚀 Запуск проекта
-
-### Вариант 1: С Docker
-```bash
+ 
 docker-compose up -d
+
