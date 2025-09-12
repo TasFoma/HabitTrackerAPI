@@ -23,6 +23,20 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy => policy.WithOrigins(
+            "http://192.168.0.6:3000",    
+            "http://192.168.0.72:3000",   
+            "http://127.0.0.1:3000",      
+            "http://localhost:3000",     
+            "http://localhost:5145"       //  для бэкенда
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials());
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -35,10 +49,8 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = "swagger"; // должен Swagger доступен по /swagger
     });
 }
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
+ 
 app.UseAuthorization();
-app.MapControllers();
-
+app.UseCors("AllowFrontend");
+app.MapControllers(); 
 app.Run();
